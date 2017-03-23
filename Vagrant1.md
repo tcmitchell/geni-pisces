@@ -1,5 +1,7 @@
 # Recreating the PISCES vagrant demo
 
+Note: This attempt ended in [failure](#failure).
+
 ## Allocate a hardware node
 
 My node was a pc300 at Emulab running Ubuntu 16.04.
