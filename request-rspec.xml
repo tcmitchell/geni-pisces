@@ -1,0 +1,33 @@
+<rspec xmlns="http://www.geni.net/resources/rspec/3" xmlns:emulab="http://www.protogeni.net/resources/rspec/ext/emulab/1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.geni.net/resources/rspec/3    http://www.geni.net/resources/rspec/3/request.xsd" type="request">
+    <node xmlns="http://www.geni.net/resources/rspec/3" client_id="vm2">
+        <sliver_type xmlns="http://www.geni.net/resources/rspec/3" name="emulab-xen">
+            <disk_image xmlns="http://www.geni.net/resources/rspec/3" name="urn:publicid:IDN+emulab.net+image+emulab-ops:UBUNTU14-64-STD" />
+        </sliver_type>
+        <services xmlns="http://www.geni.net/resources/rspec/3" />
+        <interface xmlns="http://www.geni.net/resources/rspec/3" client_id="interface-0" />
+    </node>
+    <node xmlns="http://www.geni.net/resources/rspec/3" client_id="vm1">
+        <sliver_type xmlns="http://www.geni.net/resources/rspec/3" name="emulab-xen">
+            <disk_image xmlns="http://www.geni.net/resources/rspec/3" name="urn:publicid:IDN+emulab.net+image+emulab-ops:UBUNTU14-64-STD" />
+        </sliver_type>
+        <services xmlns="http://www.geni.net/resources/rspec/3" />
+        <interface xmlns="http://www.geni.net/resources/rspec/3" client_id="interface-2" />
+    </node>
+    <node xmlns="http://www.geni.net/resources/rspec/3" client_id="middle" component_id="INSERT PC COMPONENT ID">
+        <sliver_type xmlns="http://www.geni.net/resources/rspec/3" name="raw-pc">
+            <disk_image xmlns="http://www.geni.net/resources/rspec/3" name="urn:publicid:IDN+emulab.net+image+emulab-ops:UBUNTU14-64-STD" />
+        </sliver_type>
+        <hardware_type xmlns="http://www.geni.net/resources/rspec/3" name="pc" />
+        <services xmlns="http://www.geni.net/resources/rspec/3" />
+        <interface xmlns="http://www.geni.net/resources/rspec/3" client_id="interface-1" component_id="INSERT INTERFACE COMPONENT ID 1" />
+        <interface xmlns="http://www.geni.net/resources/rspec/3" client_id="interface-3" component_id="INSERT INTERFACE COMPONENT ID 2" />
+    </node>
+    <link xmlns="http://www.geni.net/resources/rspec/3" client_id="link-0">
+        <interface_ref xmlns="http://www.geni.net/resources/rspec/3" client_id="interface-0" />
+        <interface_ref xmlns="http://www.geni.net/resources/rspec/3" client_id="interface-1" />
+    </link>
+    <link xmlns="http://www.geni.net/resources/rspec/3" client_id="link-1">
+        <interface_ref xmlns="http://www.geni.net/resources/rspec/3" client_id="interface-2" />
+        <interface_ref xmlns="http://www.geni.net/resources/rspec/3" client_id="interface-3" />
+    </link>
+</rspec>
