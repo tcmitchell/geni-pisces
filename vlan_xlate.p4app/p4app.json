@@ -1,0 +1,14 @@
+{
+  "program": "simple_router.p4",
+    "language": "p4-14",
+    "default-target": "custom",
+  "targets": {
+    "mininet": {
+      "num-hosts": 2,
+      "switch-config": "simple_router.config"
+    },
+      "custom": {
+	  "program": "vlan_topo.py --switch-config simple_router.config --log-file /var/log/simple_router.p4.log"
+    }
+  }
+}
