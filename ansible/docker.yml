@@ -1,0 +1,53 @@
+---
+- hosts: all
+  vars:
+    docker:
+      apt_key: 9DC858229FC7DD38854AE2D88D81803C0EBFCD88
+      key_url: https://download.docker.com/linux/ubuntu/gpg
+  tasks:
+    - name: Update apt cache
+      become: true
+      apt:
+        update_cache: yes
+    - name: Install docker repository dependencies
+      become: true
+      apt: name={{item}} state=installed
+      with_items:
+           - apt-transport-https
+           - ca-certificates
+           - curl
+           - software-properties-common
+    - name: Install docker apt key
+      become: true
+      apt_key:
+        id: "{{ docker.apt_key }}"
+        url: "{{ docker.key_url }}"
+    - name: Temprorary Debugging
+      debug:
+        var: ansible_lsb
+        # msg: The ansible_lsb = {{ ansible_lsb }} with arch {{ ansible_lsb.arch }}
+    - name: Add docker repository
+      become: true
+      apt_repository:
+        repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_lsb.codename }} stable
+        state: present
+    - name: Update apt for docker
+      become: true
+      apt:
+        update_cache: yes
+    - name: Install docker CE
+      become: true
+      apt:
+        name=docker-ce
+        state=installed
+    - name: Create group docker
+      become: true
+      group:
+        name: docker
+        state: present
+    - name: Add {{ ansible_user_id }} to docker group
+      become: true
+      user:
+        name: "{{ ansible_user_id }}"
+        groups: docker
+        append: yes

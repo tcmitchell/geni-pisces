@@ -19,10 +19,26 @@ accurate and up to date.
 
 ### Install Docker
 
-You want Docker Community Edition (CE). The
+There is an ansible script to install Docker Community Edition (CE).
+
+* Install ansible
+
+    ```
+    sudo apt-get install -y ansible
+    ```
+
+* Install docker via ansible
+
+    ```
+    cd geni-pisces
+    ansible-playbook -i localhost -c local ansible/docker.yml
+    ```
+
+The ansible script performs the
 [installation instructions](https://docs.docker.com/engine/installation/)
-aren't the clearest. Be patient and scroll
-past the Enterprise Edition (EE) instructions.
+for Docker CE. If you would prefer to do the installation yourself,
+Here's how to follow the docker
+[installation instructions](https://docs.docker.com/engine/installation/):
 
 * Click on your OS (Ubuntu) in the compatibility table
 * Scroll past the EE and OS requirements to "Install Docker"
