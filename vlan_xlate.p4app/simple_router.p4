@@ -8,6 +8,24 @@ action _drop() {
     drop();
 }
 
+
+action translate_vlan(vlan) {
+  vlan_tag.vid = vlan;
+}
+
+table vlan_translate {
+  reads {
+    vlan_tag.vid: exact;
+  }
+  actions {
+    translate_vlan;
+    _nop;
+  }
+  size: 1024;
+}
+
+
+
 action set_nhop(nhop_ipv4, port) {
   ingress_metadata.nhop_ipv4 = nhop_ipv4;
   standard_metadata.egress_spec = port;
@@ -62,6 +80,7 @@ table send_frame {
 
 
 control ingress {
+  apply(vlan_translate);
   apply(ipv4_lpm);
   apply(forward);
 }

@@ -30,6 +30,17 @@ header_type ethernet_t {
 
 header ethernet_t ethernet;
 
+header_type vlan_tag_t {
+    fields {
+        pcp : 3;
+        cfi : 1;
+        vid : 12;
+        etherType : 16;
+    }
+}
+
+header vlan_tag_t vlan_tag;
+
 header_type ipv4_t {
   fields {
     version : 4;

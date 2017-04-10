@@ -51,25 +51,18 @@ parser.add_argument('--cli', help='CLI program',
 args = parser.parse_args()
 
 
-
-
 class VLANHost(P4Host):
     "Host connected to VLAN interface"
 
-    def config( self, vlan=100, **params ):
+    def config(self, vlan=100, **params):
         """Configure VLANHost according to (optional) parameters:
            vlan: VLAN ID for default interface"""
 
-        r = super( VLANHost, self ).config( **params )
+        r = super(VLANHost, self).config(**params)
 
         intf = self.defaultIntf()
         # remove IP from default, "physical" interface
-        print 'ifconfig %s inet 0' % intf
-        self.cmd( 'ifconfig %s inet 0' % intf )
-        # create VLAN interface
-        print 'vconfig add %s %d' % ( intf, vlan )
-        result = self.cmd( 'vconfig add %s %d' % ( intf, vlan ) )
-        print 'vconfig result = %r' % (result)
+        self.cmd('ifconfig %s inet 0' % intf)
 
         # create VLAN interface
         vlan_create_cmd = 'ip link add link %s name %s.%d type vlan id %d'
@@ -86,21 +79,20 @@ class VLANHost(P4Host):
         print 'vlan_up result = %r' % (result)
 
         # assign the host's IP to the VLAN interface
-        print 'ifconfig %s.%d inet %s' % ( intf, vlan, params['ip'] )
-        self.cmd( 'ifconfig %s.%d inet %s' % ( intf, vlan, params['ip'] ) )
+        self.cmd('ifconfig %s.%d inet %s' % (intf, vlan, params['ip']))
         # update the intf name and host's intf map
-        newName = '%s.%d' % ( intf, vlan )
+        newName = '%s.%d' % (intf, vlan)
         # update the (Mininet) interface to refer to VLAN interface name
         intf.name = newName
         # add VLAN interface to host's name to intf map
-        self.nameToIntf[ newName ] = intf
+        self.nameToIntf[newName] = intf
 
         return r
 
     def describe(self, sw_addr=None, sw_mac=None):
         print "**********"
         print "Network configuration for: %s" % self.name
-        print "Default interface: %s\t%s\t%s" %(
+        print "Default interface: %s\t%s\t%s" % (
             self.defaultIntf().name,
             self.defaultIntf().IP(),
             self.defaultIntf().MAC()
@@ -108,6 +100,7 @@ class VLANHost(P4Host):
         if sw_addr is not None or sw_mac is not None:
             print "Default route to switch: %s (%s)" % (sw_addr, sw_mac)
         print "**********"
+
 
 class SingleSwitchTopo(Topo):
     "Single switch connected to n (< 256) hosts."
@@ -134,6 +127,7 @@ class SingleSwitchTopo(Topo):
             print "Adding host", str(host)
             self.addLink(host, switch)
 
+
 def main():
     num_hosts = args.num_hosts
     mode = args.mode
@@ -149,7 +143,6 @@ def main():
                   switch = P4Switch,
                   controller = None)
     net.start()
-
 
     sw_mac = ["00:aa:bb:00:00:%02x" % n for n in xrange(num_hosts)]
 
@@ -188,9 +181,10 @@ def main():
         with open(args.cli_message, 'r') as message_file:
             print message_file.read()
 
-    CLI( net )
+    CLI(net)
     net.stop()
 
+
 if __name__ == '__main__':
-    setLogLevel( 'info' )
+    setLogLevel('info')
     main()
