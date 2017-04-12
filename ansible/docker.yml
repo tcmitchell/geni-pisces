@@ -22,10 +22,6 @@
       apt_key:
         id: "{{ docker.apt_key }}"
         url: "{{ docker.key_url }}"
-    - name: Temprorary Debugging
-      debug:
-        var: ansible_lsb
-        # msg: The ansible_lsb = {{ ansible_lsb }} with arch {{ ansible_lsb.arch }}
     - name: Add docker repository
       become: true
       apt_repository:
