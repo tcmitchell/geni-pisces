@@ -31,8 +31,18 @@ There is an ansible script to install Docker Community Edition (CE).
 
     ```
     cd geni-pisces
-    ansible-playbook -i localhost -c local ansible/docker.yml
+    ansible-playbook -i localhost, -c local ansible/docker.yml
     ```
+
+* Log out then log back in. The docker installation will add your account
+to the `docker` group, but that can only take effect when you log back in.
+
+* Test docker:
+
+    ```
+    docker run hello-world
+    ```
+
 
 The ansible script performs the
 [installation instructions](https://docs.docker.com/engine/installation/)
