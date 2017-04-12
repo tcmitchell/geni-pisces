@@ -23,6 +23,7 @@ from mininet.cli import CLI
 
 from p4_mininet import P4Switch, P4Host
 
+import os
 import argparse
 from subprocess import PIPE, Popen
 from time import sleep
@@ -180,6 +181,19 @@ def main():
     if args.cli_message is not None:
         with open(args.cli_message, 'r') as message_file:
             print message_file.read()
+
+    container = os.environ['HOSTNAME']
+    print
+    print 'To inspect or change the switch configuration, connect to'
+    print 'its CLI from your host operating system using this command:'
+    print '  docker exec -t -i %s simple_switch_CLI' % container
+    print
+    print 'To view the switch log, run this command from your host OS:'
+    print '  docker exec -t -i %s tail -f %s' % (container, args.log_file)
+    print
+    print 'To run the switch debugger, run this command from your host OS:'
+    print '  docker exec -t -i %s bm_p4dbg' % container
+    print
 
     CLI(net)
     net.stop()
