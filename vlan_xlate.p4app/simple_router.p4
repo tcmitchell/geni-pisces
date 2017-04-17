@@ -10,7 +10,7 @@ action _drop() {
 
 
 action translate_vlan(vlan) {
-  vlan_tag.vid = vlan;
+  modify_field(vlan_tag.vid, vlan);
 }
 
 table vlan_translate {
@@ -27,9 +27,9 @@ table vlan_translate {
 
 
 action set_nhop(nhop_ipv4, port) {
-  ingress_metadata.nhop_ipv4 = nhop_ipv4;
-  standard_metadata.egress_spec = port;
-  ipv4.ttl = ipv4.ttl - 1;
+  modify_field(ingress_metadata.nhop_ipv4, nhop_ipv4);
+  modify_field(standard_metadata.egress_spec, port);
+  add_to_field(ipv4.ttl, -1);
 }
 
 table ipv4_lpm {
@@ -46,7 +46,7 @@ table ipv4_lpm {
 
 
 action set_dmac(dmac) {
-  ethernet.dstAddr = dmac;
+  modify_field(ethernet.dstAddr, dmac);
 }
 
 table forward {
@@ -63,7 +63,7 @@ table forward {
 
 
 action rewrite_mac(smac) {
-  ethernet.srcAddr = smac;
+  modify_field(ethernet.srcAddr, smac);
 }
 
 table send_frame {
