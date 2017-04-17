@@ -15,7 +15,7 @@ set -e
 set -x
 
 PISCES_HOME=`pwd`
-if [ -d /home/vagrant ];
+if [ -d /home/vagrant ]; then
   PISCES_HOME=/home/vagrant
 fi
 
