@@ -29,13 +29,6 @@ import sys
 import geni.aggregate.instageni as IG
 import geni.util
 
-# For our purposes, all InstaGENI Xen VM servers are equal
-# and each can hold a maximum of 43 Xen VMs. This is a
-# magic number, don't put too much stock into it. It loosely
-# approximates how many VMs a Xen server can hold if they are
-# all default sized VMs.
-MAX_XEN_LOAD = 43
-
 # Ignore these sites when searching. These are development sites
 # or should be ignored for some other reason.
 IGNORED_SITE_NAMES = ['ig-utah', 'ig-gpo', 'ig-princeton', 'ig-utahddc']
@@ -52,22 +45,16 @@ def get_ad(context, site):
     return ad
 
 
-def get_xen_load(ad, site):
-    nodes = 0
-    site_max = 0
+def get_xen_load(ad):
+    site_nodes = 0
     site_avail = 0
     for node in ad.nodes:
         if not node.exclusive and 'emulab-xen' in node.sliver_types:
+            site_nodes += 1
             avail = int(node.hardware_types["pcvm"])
-            # print 'Site %s: hardware types = %r' % (site.name, what)
-            nodes += 1
-            site_max += MAX_XEN_LOAD
             site_avail += avail
-    # print 'Site %s: Nodes %d; Max VMs %d; avail %d' % (site.name, nodes,
-    #                                                    site_max, site_avail)
     # Note this uses __future__ division to get a float from two ints
-    score = site_avail / site_max
-    # print 'Site score = %r' % (score)
+    score = site_avail / site_nodes
     return score
 
 
@@ -102,13 +89,13 @@ def main(argv=None):
             print 'Skipping %s, no bare metal available.' % (site.name)
             continue
         site.raw_score = raw_score
-        site.xen_score = get_xen_load(ad, site)
+        site.xen_score = get_xen_load(ad)
         possible_sites.append(site)
     print '\n\n-=-=-=-=-=-=-=-=-=-=-\n\n'
     # Sort the best candidates to the front of the list
     possible_sites.sort(cmp=site_cmp, reverse=True)
     for site in possible_sites:
-        pretty_xen_score = int(round(site.xen_score * 100))
+        pretty_xen_score = int(round(site.xen_score))
         print 'Site %s: %d raw, xen score %d)' % (site.name, site.raw_score,
                                                   pretty_xen_score)
 
