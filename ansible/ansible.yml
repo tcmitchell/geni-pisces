@@ -1,0 +1,19 @@
+---
+- hosts: all
+  tasks:
+    - name: Install ansible dependencies
+      sudo: true
+      apt: name={{item}} state=installed update_cache=yes
+      with_items:
+           - software-properties-common
+           - python-pycurl
+    - name: Add ansible PPA repository
+      sudo: true
+      apt_repository:
+        repo: ppa:ansible/ansible
+        state: present
+    - name: Install ansible
+      sudo: true
+      apt: name={{item}} state=latest update_cache=yes
+      with_items:
+           - ansible
