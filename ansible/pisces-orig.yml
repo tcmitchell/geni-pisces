@@ -1,0 +1,103 @@
+---
+- hosts: all
+  vars:
+    pisces_dir: "{{ ansible_env.HOME }}"
+    pisces_p4_hilr: "{{ pisces_dir }}/p4-hilr"
+    pisces_p4c_behavioral: "{{ pisces_dir }}/p4c-behavioral"
+    pisces_ovs: "{{ pisces_dir }}/ovs"
+    pisces_dpdk: "{{ pisces_ovs }}/deps/dpdk"
+    pisces_common_linuxapp_sha1: 0dae01d5f43155a8714fd5b5cef0ab816b0a31de
+    pisces_dpdk_target: x86_64-native-linuxapp-gcc
+    pisces_dpdk_make_creates: "{{ pisces_dpdk }}/{{ pisces_dpdk_target }}/app/proc_info.map"
+    # pisces:
+    #   p4_hilr_dir: "{{ pisces_dir }}/p4-hilr"
+    #   p4c_behavioral_dir: "{{ pisces_dir }}/p4c-behavioral"
+    #   ovs_dir: "{{ pisces_dir }}/ovs"
+    #   dpdk_dir: "{{ pisces_dir }}/ovs/deps/dpdk"
+    #   common_linuxapp_sha1: 0dae01d5f43155a8714fd5b5cef0ab816b0a31de
+  tasks:
+    - name: Debug
+      debug: var=pisces_dpdk
+    # - name: Fail
+    #   fail: msg=stopping
+    - name: Install pisces dependencies
+      become: true
+      apt: name={{item}} state=installed update_cache=yes
+      with_items:
+           - python-setuptools
+           - python-yaml
+           - python-pip
+
+    # Clone and install p4-hilr
+    # Should we just PIP install via git URL?
+    # pip install git+https://github.com/p4lang/p4-hlir.git
+    # pip install https://github.com/p4lang/p4-hlir/archive/master.tar.gz
+    - name: Clone p4lang/p4-hilr
+      git:
+        repo: https://github.com/p4lang/p4-hlir.git
+        dest: "{{ pisces_p4_hilr }}"
+    - name: Install p4-hilr
+      become: true
+      pip:
+        name: "{{ pisces_p4_hilr }}"
+
+    # Clone and install p4c-behavioral from the ovs branch
+    # pip install git+https://github.com/P4-vSwitch/p4c-behavioral.git@ovs
+    # pip install https://github.com/P4-vSwitch/p4c-behavioral/archive/ovs.tar.gz
+    - name: Clone P4-vSwitch/p4c-behavioral
+      git:
+        repo: https://github.com/P4-vSwitch/p4c-behavioral.git
+        dest: "{{ pisces_p4c_behavioral }}"
+        version: ovs
+    - name: Install p4c-behavioral
+      become: true
+      pip:
+        name: "{{ pisces_p4c_behavioral }}"
+
+    # Clone and install ovs (from P4-vSwitch)
+    - name: Clone P4-vSwitch/ovs
+      git:
+        repo: https://github.com/P4-vSwitch/ovs.git
+        dest: "{{ pisces_ovs }}"
+        version: p4
+        track_submodules: yes
+        update: no
+    - name: Check if patch is needed
+      stat:
+        path: "{{ pisces_dpdk }}/config/common_linuxapp"
+        get_checksum: yes
+        checksum_algorithm: sha1
+      register: common_linuxapp
+    # - debug:
+    #         msg: "sha1 = {{ common_linuxapp.stat.checksum }}"
+    # - debug:
+    #         var: common_linuxapp.stat
+    - name: Patch DPDK
+      patch:
+        src: "{{ pisces_ovs }}/setup-scripts/patches/dpdk.patch"
+        basedir: "{{ pisces_dpdk }}"
+        strip: 1
+      when: common_linuxapp.stat.checksum != pisces_common_linuxapp_sha1
+
+    # make -j 2 install T=x86_64-native-linuxapp-gcc
+    - name: Build DPDK
+      command: make -j 2 install T={{ pisces_dpdk_target }}
+      args:
+        chdir: "{{ pisces_dpdk }}"
+        creates: "{{ pisces_dpdk_make_creates }}"
+
+    # Mount huge pages
+    - name: Mount huge pages
+      become: true
+      mount:
+        fstype: hugetlbfs
+        src: nodev
+        path: /mnt/huge
+        state: mounted
+
+    # Configure huge pages
+    - name: Configure huge pages
+      become: true
+      copy:
+        content=1024
+        dest=/sys/devices/system/node/node0/hugepages/hugepages-2048kB/nr_hugepages

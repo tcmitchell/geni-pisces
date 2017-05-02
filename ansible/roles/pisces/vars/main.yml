@@ -8,3 +8,4 @@ pisces_dpdk: "{{ pisces_ovs }}/deps/dpdk"
 pisces_common_linuxapp_sha1: 0dae01d5f43155a8714fd5b5cef0ab816b0a31de
 pisces_dpdk_target: x86_64-native-linuxapp-gcc
 pisces_dpdk_make_creates: "{{ pisces_dpdk }}/{{ pisces_dpdk_target }}/app/proc_info.map"
+pisces_dpdk_kmod: "{{ pisces_dpdk }}/{{ pisces_dpdk_target }}/kmod"

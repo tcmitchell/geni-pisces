@@ -84,3 +84,23 @@
     path: /etc/sysctl.conf
     regexp: '^vm.nr_hugepages='
     line: 'vm.nr_hugepages=1024'
+
+- name: Add uio kernel module
+  become: true
+  modprobe:
+    name: uio
+    state: present
+
+- name: Find kernel modules
+  command: awk '{ print $1; }' /proc/modules
+  register: kernel_modules
+
+- name: Insert igb_uio kernel module
+  become: true
+  command: insmod {{ pisces_dpdk_kmod }}/igb_uio.ko
+  when: "'igb_uio' not in kernel_modules.stdout_lines"
+
+- name: Insert rte_kni kernel module
+  become: true
+  command: insmod {{ pisces_dpdk_kmod }}/rte_kni.ko "lo_mode=lo_mode_ring"
+  when: "'igb_uio' not in kernel_modules.stdout_lines"
