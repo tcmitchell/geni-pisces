@@ -91,9 +91,12 @@
     name: uio
     state: present
 
-- name: Find kernel modules
+- name: Read kernel modules
   command: awk '{ print $1; }' /proc/modules
   register: kernel_modules
+  failed_when: kernel_modules.rc != 0 and kernel_modules.stderr
+  # This is a read-only operation, never report as "changed"
+  changed_when: false
 
 - name: Insert igb_uio kernel module
   become: true
@@ -103,4 +106,4 @@
 - name: Insert rte_kni kernel module
   become: true
   command: insmod {{ pisces_dpdk_kmod }}/rte_kni.ko "lo_mode=lo_mode_ring"
-  when: "'igb_uio' not in kernel_modules.stdout_lines"
+  when: "'rte_kni' not in kernel_modules.stdout_lines"
