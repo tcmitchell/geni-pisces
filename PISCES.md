@@ -36,10 +36,10 @@ sudo reboot
 
 1. Always "keep your currently-installed version" when prompted
 2. Updating GRUB:
-  1. keep the local version currently installed; Ok
-  2. Ok (previously installed on disk no longer present)
-  3. Select NO devices; Ok
-  4. Continue without installing GRUB?  Yes
+   1. keep the local version currently installed; Ok
+   2. Ok (previously installed on disk no longer present)
+   3. Select NO devices; Ok
+   4. Continue without installing GRUB?  Yes
 
 ## Use ansible to configure the PISCES host
 
