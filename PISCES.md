@@ -72,7 +72,83 @@ sudo reboot
 
    ```
 
-##
+## Hand off interfaces to DPDK
+
+_Note: `eth0` is the control plane. DO NOT hand off eth0 to DPDK._
+
+For each interface to be used in P4:
+
+```
+export P4_INTF=eth1
+
+sudo ifconfig "${P4_INTF}" down
+sudo ~/ovs/deps/dpdk/tools/dpdk_nic_bind.py -b igb_uio "${P4_INTF}"
+```
+
+You can view the interfaces in DPDK:
+
+```
+~/ovs/deps/dpdk/tools/dpdk_nic_bind.py --status
+```
+
+## Build OVS with your P4 program
+
+```
+export MY_P4="${HOME}"/geni-pisces/vlan_xlate.p4app/simple_router.p4
+export DPDK_BUILD="${HOME}"/ovs/deps/dpdk/x86_64-native-linuxapp-gcc
+cd ~/ovs
+./boot.sh
+./configure --with-dpdk="${DPDK_BUILD}" \
+            CFLAGS="-g -O2 -Wno-cast-align" \
+            p4inputfile="${MY_P4}" \
+            p4outputdir=./include/p4/src
+make -j 2
+```
+
+## Create OVS database
+
+```
+sudo mkdir -p /usr/local/etc/openvswitch
+sudo mkdir -p /usr/local/var/run/openvswitch
+cd "${HOME}"/ovs/ovsdb/
+sudo ./ovsdb-tool create /usr/local/etc/openvswitch/conf.db ../vswitchd/vswitch.ovsschema
+```
+
+# Running OVS
+
+Running OVS with your P4 program requires two terminal windows.
+
+Run `ovsdb-server` in terminal 1:
+
+```
+cd "${HOME}"/ovs/ovsdb
+sudo ./ovsdb-server --remote=punix:/usr/local/var/run/openvswitch/db.sock \
+                    --remote=db:Open_vSwitch,Open_vSwitch,manager_options \
+                    --pidfile
+```
+
+Run `ovs-vswitchd` in terminal 2:
+
+```
+cd "${HOME}"/ovs/vswitchd
+sudo ./ovs-vswitchd --dpdk -c 0x1 -n 4 -- unix:/usr/local/var/run/openvswitch/db.sock --pidfile
+```
+
+## Create an OVS bridge
+
+This only needs to be done once, and requires a third terminal window.
+This must be done when `ovsdb-server` and `ovs-vswitchd` are running.
+
+```
+cd "${HOME}"/ovs/utilities
+sudo ./ovs-vsctl --no-wait init
+sudo ./ovs-vsctl add-br br0 -- set bridge br0 datapath_type=netdev
+sudo ./ovs-vsctl set bridge br0 protocols=OpenFlow15
+sudo ./ovs-vsctl add-port br0 dpdk0 -- set Interface dpdk0 type=dpdk
+sudo ./ovs-vsctl add-port br0 dpdk1 -- set Interface dpdk1 type=dpdk
+```
+
+# Install the P4 match/action tables
 
 
 
