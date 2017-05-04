@@ -150,6 +150,35 @@ sudo ./ovs-vsctl add-port br0 dpdk1 -- set Interface dpdk1 type=dpdk
 
 # Install the P4 match/action tables
 
+```
+sudo "${HOME}"/geni-pisces/vlan_xlate.p4app/simple_router.sh
+```
+
+## To clear the P4 match/action tables:
+
+```
+sudo "${HOME}"/ovs/utilities/ovs-ofctl --protocols=OpenFlow15 del-flows br0
+```
+
+# Manually install ARP entries
+
+The PISCES-configured OVS switch will drop ARP packets, so ARP tables
+must be manually configured on the client VMs. Each VM needs an entry
+mapping the switch's IP address and MAC address
+_on the same VLAN as the VM_.
+
+To add a static entry:
+
+```
+# map IP address to MAC address
+sudo arp -s 10.10.1.2 02:18:61:cd:33:90
+```
+
+To show the arp cache, including static entries:
+
+```
+arp -a -n
+```
 
 
 # Future Work
