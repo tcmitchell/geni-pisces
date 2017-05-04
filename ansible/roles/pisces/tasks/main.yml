@@ -78,12 +78,17 @@
     path: /mnt/huge
     state: mounted
 
+- name: Check nr_hugepages
+  stat:
+    path: "{{ pisces_nr_hugepages }}"
+    get_checksum: yes
+    checksum_algorithm: sha1
+  register: nr_hugepages
+
 - name: Configure hugepages
   become: true
-  lineinfile:
-    path: /etc/sysctl.conf
-    regexp: '^vm.nr_hugepages='
-    line: 'vm.nr_hugepages=1024'
+  shell: echo 1024 > {{ pisces_nr_hugepages }}
+  when: nr_hugepages.stat.checksum != pisces_nr_hugepages_sha1
 
 - name: Add uio kernel module
   become: true

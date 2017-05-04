@@ -9,3 +9,5 @@ pisces_common_linuxapp_sha1: 0dae01d5f43155a8714fd5b5cef0ab816b0a31de
 pisces_dpdk_target: x86_64-native-linuxapp-gcc
 pisces_dpdk_make_creates: "{{ pisces_dpdk }}/{{ pisces_dpdk_target }}/app/proc_info.map"
 pisces_dpdk_kmod: "{{ pisces_dpdk }}/{{ pisces_dpdk_target }}/kmod"
+pisces_nr_hugepages: /sys/devices/system/node/node0/hugepages/hugepages-2048kB/nr_hugepages
+pisces_nr_hugepages_sha1: ca02b6fe643a072de15ea6e0a7cba7298ee0a017
