@@ -1,0 +1,46 @@
+#!/usr/bin/env python
+
+import subprocess
+import sys
+import geni.rspec.pgmanifest as pgm
+
+
+def mac_to_hex(mac_string):
+    return '0x' + mac_string
+
+
+my_client_id = subprocess.check_output(['geni-get', 'client_id'])
+
+manifest_xml = subprocess.check_output(['geni-get', 'manifest'])
+manifest = pgm.Manifest(xml=manifest_xml)
+
+replacements = dict()
+
+# Get the VLANs for the translation statements
+vlans = [l.vlan for l in manifest.links]
+replacements['vlan_1'] = vlans[0]
+replacements['vlan_2'] = vlans[1]
+
+# links = list(manifest.links)
+nodes = list(manifest.nodes)
+
+# Need the MAC addresses
+[[i.mac_address for i in n.interfaces] for n in manifest.nodes]
+ip2mac = dict()
+for node in manifest.nodes:
+    for iface in node.interfaces:
+        ip = iface.address_info[0]
+        mac = iface.mac_address
+        ip2mac[ip] = mac
+
+replacements['source_mac_1'] = mac_to_hex(ip2mac['10.10.1.2'])
+replacements['source_mac_2'] = mac_to_hex(ip2mac['10.10.2.2'])
+replacements['dest_mac_1'] = mac_to_hex(ip2mac['10.10.1.1'])
+replacements['dest_mac_2'] = mac_to_hex(ip2mac['10.10.2.1'])
+
+template = sys.stdin.read()
+for key in replacements:
+    token = '@' + key + '@'
+    template = template.replace(token, replacements[key])
+
+sys.stdout.write(template)
