@@ -1,0 +1,41 @@
+---
+
+# See http://geni-lib.readthedocs.io/en/latest/intro/ubuntu.html
+# See http://geni-lib.readthedocs.io/en/latest/intro/ubuntu16.html
+
+- name: Install dependencies
+  become: true
+  apt: name={{item}} state=installed update_cache=yes
+  with_items:
+       - mercurial
+       - build-essential
+       - python-setuptools
+       - libxml2-dev
+       - python-dev
+       - libxslt1-dev
+       - zlib1g-dev
+       - libffi-dev
+       - libssl-dev
+       - python-ipaddr
+       - python-requests
+       - python-lxml
+       - python-pip
+
+- name: Install 16.04 dependencies
+  become: true
+  apt: name={{item}} state=installed update_cache=yes
+  with_items:
+       - python-cryptography
+  when: ansible_distribution_version == "16.04"
+
+- name: Clone geni-lib repository
+  hg:
+    repo: http://bitbucket.org/barnstorm/geni-lib
+    dest: "{{ ansible_env.HOME }}/geni-lib"
+    revision: 0.9-DEV
+    update: no
+
+- name: Install geni-lib
+  become: true
+  pip:
+    name: "{{ ansible_env.HOME }}/geni-lib"
