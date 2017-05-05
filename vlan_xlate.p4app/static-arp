@@ -1,0 +1,58 @@
+#!/usr/bin/env python
+
+#
+# Find my client_id. Find links that I am part of.
+# Add a static arp entry for the other end of the link.
+#
+
+import subprocess
+import sys
+import geni.rspec.pgmanifest as pgm
+
+
+def find_myself(manifest, client_id):
+    for node in manifest.nodes:
+        if client_id == node.client_id:
+            return node
+    return None
+
+
+def arp_mac_addr(mac):
+    "Converts '02c7eed8aa5d' to '02:c7:ee:d8:aa:5d'"
+    return ':'.join(s.encode('hex') for s in mac.decode('hex'))
+
+
+my_client_id = subprocess.check_output(['geni-get', 'client_id'])
+my_client_id = my_client_id.strip()
+
+manifest_xml = subprocess.check_output(['geni-get', 'manifest'])
+manifest = pgm.Manifest(xml=manifest_xml)
+
+myself = find_myself(manifest, my_client_id)
+# print 'Myself: %r' % (myself)
+my_interfaces = [i.sliver_id for i in myself.interfaces]
+# print 'My interfaces: %r' % (my_interfaces)
+my_links = []
+for link in manifest.links:
+    for ref in link.interface_refs:
+        if ref in my_interfaces:
+            my_links.append(link)
+
+# print 'My links: %r' % (my_links)
+
+all_interfaces = {}
+# Build a table of interface sliver_id to ip/mac tuple
+for node in manifest.nodes:
+    if node is myself:
+        continue
+    for iface in node.interfaces:
+        ip = iface.address_info[0]
+        mac = arp_mac_addr(iface.mac_address)
+        all_interfaces[iface.sliver_id] = (ip, mac)
+
+for link in my_links:
+    for ref in link.interface_refs:
+        if ref in my_interfaces:
+            continue
+        (ip, mac) = all_interfaces[ref]
+        print 'sudo arp -s %s %s' % (ip, mac)
